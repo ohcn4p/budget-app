@@ -2575,7 +2575,7 @@ function customConfirm(msg, onYes, onNo) {
   };
 }
 
-const APP_VERSION = 87; // increment with each update
+const APP_VERSION = 88; // increment with each update
 
 /* ── DATE HELPERS ── */
 function localDateStr(d) {
@@ -4157,36 +4157,33 @@ function renderCCSubledger(cardId) {
   const _ccKey  = monthKey(viewDate);
   const _nowC   = new Date();
   const _isNow  = viewDate.getFullYear() === _nowC.getFullYear() && viewDate.getMonth() === _nowC.getMonth();
-  const txs = _isNow ? _allTxs : _allTxs.filter(t => t.date && t.date.startsWith(_ccKey));
+  const txs = _allTxs.filter(t => t.date && t.date.startsWith(_ccKey));
   if (!txs.length) {
     return '<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px 0;">No transactions yet. Add one or import a CSV.</div>';
   }
 
-  // Last 14 days window
-  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 14); cutoff.setHours(0,0,0,0);
-  const cutoffStr = localDateStr(cutoff);
-
-  const recentCharges  = txs.filter(t => t.date >= cutoffStr && (t.txType === 'charge' || !t.txType));
-  const recentPayments = txs.filter(t => t.date >= cutoffStr && t.txType === 'payment');
+  const recentCharges  = txs.filter(t => t.txType === 'charge' || !t.txType);
+  const recentPayments = txs.filter(t => t.txType === 'payment');
   const chargesTotal   = recentCharges.reduce((s,t) => s + t.amount, 0);
   const paymentsTotal  = recentPayments.reduce((s,t) => s + t.amount, 0);
+  const periodLabel    = _isNow ? '14 days' : MONTHS_FULL[viewDate.getMonth()];
 
   let html = '';
 
   if (chargesTotal > 0 || paymentsTotal > 0) {
     html += '<div class="cc-2week-strip" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">'
       + '<div>'
-      + '<div class="cc-2week-label">Charged (14 days)</div>'
+      + '<div class="cc-2week-label">Charged (' + periodLabel + ')</div>'
       + '<div style="font-size:10px;color:var(--muted);font-family:DM Mono,monospace;margin-top:2px;">' + recentCharges.length + ' transaction' + (recentCharges.length !== 1 ? 's' : '') + '</div>'
       + '<div class="cc-2week-amt" style="margin-top:4px;">' + fmt(chargesTotal) + '</div>'
       + '</div>'
       + '<div style="text-align:right;">'
-      + '<div class="cc-2week-label">Paid (14 days)</div>'
+      + '<div class="cc-2week-label">Paid (' + periodLabel + ')</div>'
       + '<div style="font-size:10px;color:var(--muted);font-family:DM Mono,monospace;margin-top:2px;">' + recentPayments.length + ' payment' + (recentPayments.length !== 1 ? 's' : '') + '</div>'
       + '<div style="font-family:DM Serif Display,serif;font-size:18px;color:var(--income);margin-top:4px;">' + fmt(paymentsTotal) + '</div>'
       + '</div>'
       + '<div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;align-items:center;">'
-      + '<div style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;">Net Owed (14 days)</div>'
+      + '<div style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;">Net Owed (' + periodLabel + ')</div>'
       + '<div style="font-family:DM Serif Display,serif;font-size:20px;color:' + (chargesTotal - paymentsTotal > 0 ? 'var(--expense)' : 'var(--income)') + ';">' + fmt(Math.abs(chargesTotal - paymentsTotal)) + '</div>'
       + '</div>'
       + '</div>';
@@ -7814,7 +7811,7 @@ function renderSettings() {
           <div class="settings-row-icon" style="background:rgba(122,172,232,0.15);">📱</div>
           <div class="settings-row-info">
             <div class="settings-row-label">Budget App</div>
-            <div class="settings-row-sub">File version: v92 · Data version: ${APP_VERSION}</div>
+            <div class="settings-row-sub">File version: v93 · Data version: ${APP_VERSION}</div>
           </div>
         </div>
         <div class="settings-row" style="cursor:default;">
@@ -7876,7 +7873,7 @@ function exportData(silent) {
   const a    = document.createElement('a');
   const date = localDateStr();
   a.href     = url;
-  a.download = 'budget-v92-app' + APP_VERSION + '-' + date + '.json';
+  a.download = 'budget-v93-app' + APP_VERSION + '-' + date + '.json';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
